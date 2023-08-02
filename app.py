@@ -75,16 +75,20 @@ def user_signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
 
         if User.query.filter_by(username=username).first():
             return "Username already exists. Please choose a different username."
+
+        if password != confirm_password:
+            return "Passwords do not match. Please try again."
 
         # Create and add the user to the database
         user = User(username=username, password=generate_password_hash(password))
         db.session.add(user)
         db.session.commit()
 
-        resp = make_response(redirect(url_for('user_dashboard')))
+        resp = make_response(redirect(url_for('main_page')))
         resp.set_cookie('user', username)
         return resp
 
@@ -110,16 +114,20 @@ def manager_signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
 
         if Manager.query.filter_by(username=username).first():
             return "Username already exists. Please choose a different username."
+
+        if password != confirm_password:
+            return "Passwords do not match. Please try again."
 
         # Create and add the manager to the database
         manager = Manager(username=username, password=generate_password_hash(password))
         db.session.add(manager)
         db.session.commit()
 
-        resp = make_response(redirect(url_for('manager_dashboard')))
+        resp = make_response(redirect(url_for('main_page')))
         resp.set_cookie('manager', username)
         return resp
 
