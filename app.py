@@ -7,7 +7,7 @@ app = Flask(__name__)
 # In a real application, store users and managers in a database. For simplicity, we'll use dictionaries.
 users = {}
 managers = {}
-
+#manasa comment
 @app.route('/user/login', methods=['GET', 'POST'])
 def user_login():
     if request.method == 'POST':
