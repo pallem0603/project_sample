@@ -39,14 +39,8 @@ inventory = {
 
 @app.route('/')
 def main_page():
-    # Check if user is already logged in
-    # Redirect to respective dashboard if logged in, otherwise redirect to login page
-    if 'user' in request.cookies:
-        return redirect(url_for('user_dashboard'))
-    elif 'manager' in request.cookies:
-        return redirect(url_for('manager_dashboard'))
-    else:
-        return redirect(url_for('user_login'))
+    # Redirect to login page
+    return redirect(url_for('user_login'))
 
 @app.route('/category/<category>')
 def category_menu(category):
@@ -63,8 +57,8 @@ def user_login():
 
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
-            # Successful login, redirect to user dashboard
-            resp = make_response(redirect(url_for('user_dashboard')))
+            # Successful login, redirect to main_page
+            resp = make_response(redirect(url_for('main_page')))
             resp.set_cookie('user', username)
             return resp
 
@@ -102,8 +96,8 @@ def manager_login():
 
         manager = Manager.query.filter_by(username=username).first()
         if manager and check_password_hash(manager.password, password):
-            # Successful login, redirect to manager dashboard
-            resp = make_response(redirect(url_for('manager_dashboard')))
+            # Successful login, redirect to main_page
+            resp = make_response(redirect(url_for('main_page')))
             resp.set_cookie('manager', username)
             return resp
 
