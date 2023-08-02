@@ -3,17 +3,45 @@ from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-#this is a comment
+
 # In a real application, store users and managers in a database. For simplicity, we'll use dictionaries.
 users = {}
 managers = {}
-#manasa comment
+
+# Menu and Inventory data
+menu = {
+    'espresso': ['Espresso', 'Double Espresso', 'Americano'],
+    'cappuccino': ['Cappuccino', 'Iced Cappuccino', 'Caramel Cappuccino'],
+    'pastries': ['Croissant', 'Danish', 'Muffin'],
+    'sandwiches': ['Chicken Sandwich', 'Vegetarian Sandwich', 'BLT Sandwich'],
+    # Add more categories and items here
+}
+
+inventory = {
+    'espresso': 20,
+    'cappuccino': 15,
+    'pastries': 30,
+    'sandwiches': 10,
+    # Add more categories and inventory quantities here
+}
+
+@app.route('/')
+def main_page():
+    return render_template('main_page.html')
+
+@app.route('/category/<category>')
+def category_menu(category):
+    if category not in menu:
+        return "Category not found."
+
+    return render_template('category_menu.html', category=category, menu=menu, inventory=inventory)
+
 @app.route('/user/login', methods=['GET', 'POST'])
 def user_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        #manohar
+
         user = users.get(username)
         if user and check_password_hash(user['password'], password):
             # Successful login, redirect to user dashboard
