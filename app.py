@@ -1,12 +1,24 @@
 # app.py
 from flask import Flask, render_template, request, redirect, url_for, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///coffee_shop.db'
+db = SQLAlchemy(app)
 
-# In a real application, store users and managers in a database. For simplicity, we'll use dictionaries.
-users = {}
-managers = {}
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+
+class Manager(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+
+# Create database tables
+db.create_all()
 
 # Menu and Inventory data
 menu = {
@@ -49,8 +61,8 @@ def user_login():
         username = request.form['username']
         password = request.form['password']
 
-        user = users.get(username)
-        if user and check_password_hash(user['password'], password):
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
             # Successful login, redirect to user dashboard
             resp = make_response(redirect(url_for('user_dashboard')))
             resp.set_cookie('user', username)
@@ -64,11 +76,14 @@ def user_signup():
         username = request.form['username']
         password = request.form['password']
 
-        if username in users:
+        if User.query.filter_by(username=username).first():
             return "Username already exists. Please choose a different username."
 
-        # Store the user details in the dictionary
-        users[username] = {'username': username, 'password': generate_password_hash(password)}
+        # Create and add the user to the database
+        user = User(username=username, password=generate_password_hash(password))
+        db.session.add(user)
+        db.session.commit()
+
         resp = make_response(redirect(url_for('user_dashboard')))
         resp.set_cookie('user', username)
         return resp
@@ -81,8 +96,8 @@ def manager_login():
         username = request.form['username']
         password = request.form['password']
 
-        manager = managers.get(username)
-        if manager and check_password_hash(manager['password'], password):
+        manager = Manager.query.filter_by(username=username).first()
+        if manager and check_password_hash(manager.password, password):
             # Successful login, redirect to manager dashboard
             resp = make_response(redirect(url_for('manager_dashboard')))
             resp.set_cookie('manager', username)
@@ -96,11 +111,14 @@ def manager_signup():
         username = request.form['username']
         password = request.form['password']
 
-        if username in managers:
+        if Manager.query.filter_by(username=username).first():
             return "Username already exists. Please choose a different username."
 
-        # Store the manager details in the dictionary
-        managers[username] = {'username': username, 'password': generate_password_hash(password)}
+        # Create and add the manager to the database
+        manager = Manager(username=username, password=generate_password_hash(password))
+        db.session.add(manager)
+        db.session.commit()
+
         resp = make_response(redirect(url_for('manager_dashboard')))
         resp.set_cookie('manager', username)
         return resp
