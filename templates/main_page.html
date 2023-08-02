@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Main Page</title>
+</head>
+<body>
+    <h1>Welcome to the Coffee Shop!</h1>
+    <h2>Menu</h2>
+    <ul>
+        <li><a href="{{ url_for('category_menu', category='espresso') }}">Espresso</a></li>
+        <li><a href="{{ url_for('category_menu', category='cappuccino') }}">Cappuccino</a></li>
+        <li><a href="{{ url_for('category_menu', category='pastries') }}">Pastries</a></li>
+        <li><a href="{{ url_for('category_menu', category='sandwiches') }}">Sandwiches</a></li>
+        <!-- Add more categories here -->
+    </ul>
+</body>
+</html>
