@@ -14,7 +14,6 @@ def user_login():
         username = request.form['username']
         password = request.form['password']
         #manohar
-
         user = users.get(username)
         if user and check_password_hash(user['password'], password):
             # Successful login, redirect to user dashboard
