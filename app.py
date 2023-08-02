@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-
+#this is a comment
 # In a real application, store users and managers in a database. For simplicity, we'll use dictionaries.
 users = {}
 managers = {}
