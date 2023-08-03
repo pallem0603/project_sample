@@ -198,7 +198,7 @@
 			<h3>Espresso</h3>
 			<div class="menu-item">
 				<h4>Lungo</h4>
-				<img class="category-image" src="lungo.jpg" alt="Espresso" onclick="addItemToCart('Lungo', 3.99)">
+				<img class="category-image" src="{{ url_for('static', filename='images/lungo.jpg') }}" alt="Espresso" onclick="addItemToCart('Lungo', 3.99)">
 				<div class="category-name">$3.99</div>
 				<button class="add-to-cart" onclick="addItemToCart('Lungo', 3.99)">Add to Cart</button>
 			</div>
