@@ -1,21 +1,39 @@
+<!-- manager_signup.html -->
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Manager Signup</title>
+    <title>Manager Sign Up</title>
 </head>
 <body>
-    <h1>Manager Signup</h1>
-    <form method="post">
-        <label for="username">Username:</label>
-        <input type="text" name="username" required>
+    <h1>Manager Sign Up</h1>
+    <form method="POST" action="{{ signup_url }}">
+        <label for="first_name">First Name:</label>
+        <input type="text" name="first_name" id="first_name" required>
+        <br>
+        <label for="last_name">Last Name:</label>
+        <input type="text" name="last_name" id="last_name" required>
+        <br>
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" required>
         <br>
         <label for="password">Password:</label>
-        <input type="password" name="password" required>
+        <input type="password" name="password" id="password" required>
         <br>
         <label for="confirm_password">Confirm Password:</label>
-        <input type="password" name="confirm_password" required>
+        <input type="password" name="confirm_password" id="confirm_password" required>
         <br>
-        <button type="submit">Signup</button>
+        {% if missing_requirements %}
+            <p style="color: red;">Invalid password. The password is missing the following requirements:</p>
+            <ul>
+                {% for requirement in missing_requirements %}
+                    <li>{{ requirement }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <input type="submit" value="Sign Up">
     </form>
+    <br>
+    <p>Already have an account? <a href="{{ login_url }}">Log in here</a>.</p>
 </body>
 </html>
