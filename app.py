@@ -60,12 +60,12 @@ def category_menu(category):
     if category not in menu:
         return "Category not found."
 
-    return render_template('category_menu.html', category=category, menu=menu, inventory=inventory)
+    return render_template('category_menu.html', category=category, menu=menu[category], inventory=inventory)
 
 @app.route('/user/login', methods=['GET', 'POST'])
 def user_login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('user_email')
         password = request.form.get('password')
 
         if not email or not password:
@@ -81,7 +81,7 @@ def user_login():
         else:
             flash("Invalid email address or password. Please try again.", "error")
 
-    return render_template('user_login.html')
+    return render_template('user_login.html', signup_url=url_for('user_signup'), login_url=url_for('user_login'))
 
 @app.route('/user/signup', methods=['GET', 'POST'])
 def user_signup():
@@ -107,14 +107,14 @@ def user_signup():
             db.session.commit()
 
             flash("User successfully signed up. Please log in with your new credentials.", "success")
-            return redirect(url_for('user_login'))
+            return redirect(url_for('user_login'))  # Redirect to user login page after successful signup
 
     return render_template('user_signup.html', signup_url=url_for('user_signup'), login_url=url_for('user_login'))
 
 @app.route('/manager/login', methods=['GET', 'POST'])
 def manager_login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('manager_email')
         password = request.form.get('password')
 
         if not email or not password:
@@ -130,7 +130,7 @@ def manager_login():
         else:
             flash("Invalid email address or password. Please try again.", "error")
 
-    return render_template('manager_login.html')
+    return render_template('manager_login.html', manager_signup_url=url_for('manager_signup'), manager_login_url=url_for('manager_login'))
 
 @app.route('/manager/signup', methods=['GET', 'POST'])
 def manager_signup():
@@ -148,7 +148,7 @@ def manager_signup():
         else:
             missing_requirements = get_missing_password_requirements(password)
             if missing_requirements:
-                return render_template('manager_signup.html', signup_url=url_for('manager_signup'), login_url=url_for('manager_login'), missing_requirements=missing_requirements)
+                return render_template('manager_signup.html', manager_signup_url=url_for('manager_signup'), manager_login_url=url_for('manager_login'), missing_requirements=missing_requirements)
 
             # Create and add the manager to the database
             manager = Manager(first_name=first_name, last_name=last_name, email=email, password=generate_password_hash(password))
@@ -156,27 +156,27 @@ def manager_signup():
             db.session.commit()
 
             flash("Manager successfully signed up. Please log in with your new credentials.", "success")
-            return redirect(url_for('manager_login'))
+            return redirect(url_for('manager_login'))  # Redirect to manager login page after successful signup
 
-    return render_template('manager_signup.html', signup_url=url_for('manager_signup'), login_url=url_for('manager_login'))
+    return render_template('manager_signup.html', manager_signup_url=url_for('manager_signup'), manager_login_url=url_for('manager_login'))
 
 @app.route('/user/dashboard')
 def user_dashboard():
-    # This is the user dashboard page
     if 'user_email' not in session:
         flash("You need to log in as a user to access the dashboard.", "error")
         return redirect(url_for('user_login'))
 
-    return render_template('user_dashboard.html')
+    user = User.query.filter_by(email=session['user_email']).first()
+    return render_template('user_dashboard.html', user_name=user.first_name, menu=menu, inventory=inventory)
 
 @app.route('/manager/dashboard')
 def manager_dashboard():
-    # This is the manager dashboard page
     if 'manager_email' not in session:
         flash("You need to log in as a manager to access the dashboard.", "error")
         return redirect(url_for('manager_login'))
 
-    return render_template('manager_dashboard.html')
+    manager = Manager.query.filter_by(email=session['manager_email']).first()
+    return render_template('manager_dashboard.html', manager_name=manager.first_name, menu=menu, inventory=inventory)
 
 @app.route('/logout')
 def logout():

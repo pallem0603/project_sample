@@ -1,39 +1,24 @@
-<!-- user_signup.html -->
+{% extends 'base.html' %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>User Sign Up</title>
-</head>
-<body>
-    <h1>User Sign Up</h1>
-    <form method="POST" action="{{ signup_url }}">
+{% block content %}
+    <h2>User Signup</h2>
+    <form method="POST">
         <label for="first_name">First Name:</label>
-        <input type="text" name="first_name" id="first_name" required>
+        <input type="text" id="first_name" name="first_name" required>
         <br>
         <label for="last_name">Last Name:</label>
-        <input type="text" name="last_name" id="last_name" required>
+        <input type="text" id="last_name" name="last_name" required>
         <br>
         <label for="email">Email:</label>
-        <input type="email" name="email" id="email" required>
+        <input type="email" id="email" name="email" required>
         <br>
         <label for="password">Password:</label>
-        <input type="password" name="password" id="password" required>
+        <input type="password" id="password" name="password" required>
         <br>
         <label for="confirm_password">Confirm Password:</label>
-        <input type="password" name="confirm_password" id="confirm_password" required>
+        <input type="password" id="confirm_password" name="confirm_password" required>
         <br>
-        {% if missing_requirements %}
-            <p style="color: red;">Invalid password. The password is missing the following requirements:</p>
-            <ul>
-                {% for requirement in missing_requirements %}
-                    <li>{{ requirement }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
         <input type="submit" value="Sign Up">
     </form>
-    <br>
-    <p>Already have an account? <a href="{{ login_url }}">Log in here</a>.</p>
-</body>
-</html>
+    <p>Already have an account? <a href="{{ login_url }}">Login here</a></p>
+{% endblock %}
