@@ -1,6 +1,12 @@
-{% extends 'base.html' %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Signup</title>
+</head>
+<body>
     <h2>Manager Signup</h2>
     <form method="POST">
         <label for="first_name">First Name:</label>
@@ -20,5 +26,6 @@
         <br>
         <input type="submit" value="Sign Up">
     </form>
-    <p>Already have an account? <a href="{{ login_url }}">Login here</a></p>
-{% endblock %}
+    <p>Already have an account? <a href="{{ manager_login_url }}">Login here</a></p>
+</body>
+</html>

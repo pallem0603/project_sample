@@ -52,8 +52,19 @@ def main_page():
     if 'user_email' in session:
         return redirect(url_for('user_dashboard'))
 
-    # Redirect to user login page if not logged in
-    return redirect(url_for('user_login'))
+    # Redirect to role selection page if not logged in
+    return redirect(url_for('select_role'))
+
+@app.route('/select_role', methods=['GET', 'POST'])
+def select_role():
+    if request.method == 'POST':
+        role = request.form.get('role')
+        if role == 'user':
+            return redirect(url_for('user_login'))
+        elif role == 'manager':
+            return redirect(url_for('manager_login'))
+
+    return render_template('select_role.html')
 
 @app.route('/category/<category>')
 def category_menu(category):
@@ -126,7 +137,7 @@ def manager_login():
             # Successful login, store manager information in session
             session['manager_email'] = email
             flash(f"Welcome, {manager.first_name}! You are now logged in as a manager.", "success")
-            return redirect(url_for('manager_dashboard'))
+            return redirect(url_for('manager_dashboard'))  # Redirect to manager dashboard after successful login
         else:
             flash("Invalid email address or password. Please try again.", "error")
 
@@ -177,6 +188,56 @@ def manager_dashboard():
 
     manager = Manager.query.filter_by(email=session['manager_email']).first()
     return render_template('manager_dashboard.html', manager_name=manager.first_name, menu=menu, inventory=inventory)
+
+@app.route('/manager/add_item', methods=['GET', 'POST'])
+def add_item():
+    if 'manager_email' not in session:
+        flash("You need to log in as a manager to access this page.", "error")
+        return redirect(url_for('manager_login'))
+
+    if request.method == 'POST':
+        category = request.form.get('category')
+        item_name = request.form.get('item_name')
+
+        if category not in menu:
+            flash("Invalid category. Please try again.", "error")
+        elif item_name in menu[category]:
+            flash(f"The item '{item_name}' already exists in the menu.", "error")
+        else:
+            menu[category].append(item_name)
+            flash(f"The item '{item_name}' has been added to the menu.", "success")
+
+    return render_template('add_item.html', menu=menu)
+
+@app.route('/manager/update_quantity', methods=['GET', 'POST'])
+def update_quantity():
+    if 'manager_email' not in session:
+        flash("You need to log in as a manager to access this page.", "error")
+        return redirect(url_for('manager_login'))
+
+    if request.method == 'POST':
+        item_name = request.form.get('item_name')
+        new_quantity = int(request.form.get('new_quantity'))
+
+        # Update the item quantity in the inventory
+        if item_name in inventory and new_quantity >= 0:
+            inventory[item_name] = new_quantity
+            flash(f"Item '{item_name}' quantity has been updated.", "success")
+        else:
+            flash("Invalid input. Please try again.", "error")
+
+    return render_template('update_quantity.html', inventory=inventory)
+
+@app.route('/manager/view_orders')
+def view_orders():
+    if 'manager_email' not in session:
+        flash("You need to log in as a manager to access this page.", "error")
+        return redirect(url_for('manager_login'))
+
+    # Add logic to fetch and display customer orders here
+    # You can use your preferred method to fetch orders from the database or any other data source
+
+    return render_template('view_orders.html')
 
 @app.route('/logout')
 def logout():

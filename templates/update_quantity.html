@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Item Quantity</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Add your custom CSS file here (if any) -->
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Update Item Quantity</h2>
+        <form method="post">
+            <div class="form-group">
+                <label for="item_name">Select Item:</label>
+                <select class="form-control" id="item_name" name="item_name" required>
+                    {% for item in inventory.keys() %}
+                        <option value="{{ item }}">{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="new_quantity">New Quantity:</label>
+                <input type="number" class="form-control" id="new_quantity" name="new_quantity" min="0" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Quantity</button>
+        </form>
+    </div>
+</body>
+</html>
