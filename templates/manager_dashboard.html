@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manager Dashboard</title>
+</head>
+<body>
+    <h1>Manager Dashboard</h1>
+    <p>Welcome, {{ request.cookies.get('manager') }}!</p>
+    <p>This is your manager dashboard.</p>
+    <p>Here, you can manage the coffee shop's inventory and view orders.</p>
+    <!-- Add more manager-specific functionalities here -->
+    <p><a href="{{ url_for('logout_manager') }}">Logout</a></p>
+</body>
+</html>

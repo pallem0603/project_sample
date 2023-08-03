@@ -1,9 +1,10 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for, make_response
+from flask import Flask, render_template, request, redirect, url_for, make_response, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key_here'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///coffee_shop.db'
 db = SQLAlchemy(app)
 
@@ -39,7 +40,15 @@ inventory = {
 
 @app.route('/')
 def main_page():
-    # Redirect to login page
+    # Check if user is already logged in as manager
+    if 'manager' in request.cookies:
+        return redirect(url_for('manager_dashboard'))
+
+    # Check if user is already logged in as user
+    if 'user' in request.cookies:
+        return redirect(url_for('user_dashboard'))
+
+    # Redirect to user login page if not logged in
     return redirect(url_for('user_login'))
 
 @app.route('/category/<category>')
@@ -57,10 +66,13 @@ def user_login():
 
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
-            # Successful login, redirect to main_page
-            resp = make_response(redirect(url_for('main_page')))
+            # Successful login, redirect to user dashboard
+            resp = make_response(redirect(url_for('user_dashboard')))
             resp.set_cookie('user', username)
+            flash(f"Welcome, {username}! You are now logged in as a user.", "success")
             return resp
+        else:
+            flash("Invalid username or password. Please try again.", "error")
 
     return render_template('user_login.html')
 
@@ -72,19 +84,19 @@ def user_signup():
         confirm_password = request.form['confirm_password']
 
         if User.query.filter_by(username=username).first():
-            return "Username already exists. Please choose a different username."
+            flash("Username already exists. Please choose a different username.", "error")
+        elif password != confirm_password:
+            flash("Passwords do not match. Please try again.", "error")
+        else:
+            # Create and add the user to the database
+            user = User(username=username, password=generate_password_hash(password))
+            db.session.add(user)
+            db.session.commit()
 
-        if password != confirm_password:
-            return "Passwords do not match. Please try again."
-
-        # Create and add the user to the database
-        user = User(username=username, password=generate_password_hash(password))
-        db.session.add(user)
-        db.session.commit()
-
-        resp = make_response(redirect(url_for('main_page')))
-        resp.set_cookie('user', username)
-        return resp
+            resp = make_response(redirect(url_for('user_dashboard')))
+            resp.set_cookie('user', username)
+            flash(f"Welcome, {username}! You are now signed up and logged in as a user.", "success")
+            return resp
 
     return render_template('user_signup.html')
 
@@ -96,10 +108,13 @@ def manager_login():
 
         manager = Manager.query.filter_by(username=username).first()
         if manager and check_password_hash(manager.password, password):
-            # Successful login, redirect to main_page
-            resp = make_response(redirect(url_for('main_page')))
+            # Successful login, redirect to manager dashboard
+            resp = make_response(redirect(url_for('manager_dashboard')))
             resp.set_cookie('manager', username)
+            flash(f"Welcome, {username}! You are now logged in as a manager.", "success")
             return resp
+        else:
+            flash("Invalid username or password. Please try again.", "error")
 
     return render_template('manager_login.html')
 
@@ -111,19 +126,19 @@ def manager_signup():
         confirm_password = request.form['confirm_password']
 
         if Manager.query.filter_by(username=username).first():
-            return "Username already exists. Please choose a different username."
+            flash("Username already exists. Please choose a different username.", "error")
+        elif password != confirm_password:
+            flash("Passwords do not match. Please try again.", "error")
+        else:
+            # Create and add the manager to the database
+            manager = Manager(username=username, password=generate_password_hash(password))
+            db.session.add(manager)
+            db.session.commit()
 
-        if password != confirm_password:
-            return "Passwords do not match. Please try again."
-
-        # Create and add the manager to the database
-        manager = Manager(username=username, password=generate_password_hash(password))
-        db.session.add(manager)
-        db.session.commit()
-
-        resp = make_response(redirect(url_for('main_page')))
-        resp.set_cookie('manager', username)
-        return resp
+            resp = make_response(redirect(url_for('manager_dashboard')))
+            resp.set_cookie('manager', username)
+            flash(f"Welcome, {username}! You are now signed up and logged in as a manager.", "success")
+            return resp
 
     return render_template('manager_signup.html')
 
@@ -131,17 +146,28 @@ def manager_signup():
 def user_dashboard():
     # This is the user dashboard page
     if 'user' not in request.cookies:
+        flash("You need to log in as a user to access the dashboard.", "error")
         return redirect(url_for('user_login'))
 
-    return "Welcome to your user dashboard!"
+    return render_template('user_dashboard.html')
 
 @app.route('/manager/dashboard')
 def manager_dashboard():
     # This is the manager dashboard page
     if 'manager' not in request.cookies:
+        flash("You need to log in as a manager to access the dashboard.", "error")
         return redirect(url_for('manager_login'))
 
-    return "Welcome to your manager dashboard!"
+    return render_template('manager_dashboard.html')
+
+@app.route('/logout')
+def logout():
+    # Clear the user and manager cookies to log them out
+    resp = make_response(redirect(url_for('main_page')))
+    resp.delete_cookie('user')
+    resp.delete_cookie('manager')
+    flash("You have been logged out.", "success")
+    return resp
 
 if __name__ == '__main__':
     app.run(debug=True)
