@@ -25,7 +25,7 @@
         }
 
         h1 {
-            margin-bottom: 30px;
+            margin-bottom: 50px;
             color: #b81e20;
         }
 
@@ -41,7 +41,9 @@
             flex-wrap: wrap; /* Allow items to wrap to the next line if there's not enough space */
             justify-content: center; /* Center the list items horizontally */
         }
-
+        h2,h3,h1{
+			color:#b81e20;
+		}
         li {
             margin: 10px;
         }
@@ -167,7 +169,11 @@
 		.remove-item:hover {
 			background-color: #a31c1e;
 		}
-
+		.Expresso_category {
+    display: flex;
+    flex-direction: column; /* Arrange items vertically */
+    align-items: center; /* Center items horizontally */
+}
 		.place-order {
 			margin-top: 10px;
 			background-color: #007BFF;
@@ -188,17 +194,18 @@
 <body>
 	<div class="menu-bar">
 		<a href="main_pagefinalpro.html">Home</a>
-		<a href="cart.html">My cart</a>
+		
 		
 	</div>
 	<div class="main-content">
-		<h1>Welcome to the Coffee Shop!</h1>
+		
 		
 		<div class="menu-items">
-			<h3>Espresso</h3>
+		 <div class="Expresso_category">
+			<h2>Expresso</h2>
 			<div class="menu-item">
 				<h4>Lungo</h4>
-				<img class="category-image" src="{{ url_for('static', filename='images/lungo.jpg') }}" alt="Espresso" onclick="addItemToCart('Lungo', 3.99)">
+				<img class="category-image" src="lungo.jpg" alt="Espresso" onclick="addItemToCart('Lungo', 3.99)">
 				<div class="category-name">$3.99</div>
 				<button class="add-to-cart" onclick="addItemToCart('Lungo', 3.99)">Add to Cart</button>
 			</div>
@@ -214,8 +221,12 @@
 				<div class="category-name">$4.99</div>
 				<button class="add-to-cart" onclick="addItemToCart('Mocha', 4.99)">Add to Cart</button>
 			</div>
-           <br>
-			<h3>Cappuccino</h3>
+		 </div>
+		 
+           
+			
+			<div class="Expresso_category">
+				<h2>Cappuccino</h2>
 			<div class="menu-item">
 				<h4>Regular Cappuccino</h4>
 				<img class="category-image" src="cappuccino.jpg" alt="Regular Cappuccino" onclick="addItemToCart('Regular Cappuccino', 4.99)">
@@ -234,9 +245,11 @@
 				<div class="category-name">$5.99</div>
 				<button class="add-to-cart" onclick="addItemToCart('Caramel Cappuccino', 5.99)">Add to Cart</button>
 			</div>
-
-			<h3>Sandwiches</h3>
-			<div class="menu-item">
+</div>
+			
+			<div class="Expresso_category">
+				<h2>Sandwiches</h2>
+				<div class="menu-item">
                 <h4>Veg Sandwich</h4>
                 <img class="category-image" src="sandwiches.jpg" alt="Sandwich 1" onclick="addItemToCart('Veg Sandwich', 3.99)">
                 <div class="category-name">$3.99</div>
@@ -254,8 +267,11 @@
                 <div class="category-name">$4.99</div>
                 <button class="add-to-cart" onclick="addItemToCart('Chicken Sandwich', 4.99)">Add to Cart</button>
             </div>
-			<h3>Pastries</h3>
-			<div class="menu-item">
+			</div>
+			
+			<div class="Expresso_category">
+				<h2>Pastries</h2>
+				<div class="menu-item">
                 <h4>Black Forest</h4>
                 <img class="category-image" src="pastries.jpg" alt="pastries" onclick="addItemToCart('Black Forest', 3.99)">
                 <div class="category-name">$3.99</div>
@@ -273,7 +289,7 @@
                 <div class="category-name">$4.99</div>
                 <button class="add-to-cart" onclick="addItemToCart('Black Current', 4.99)">Add to Cart</button>
             </div>
-			
+			</div>
 		</div>
 		<div class="cart">
 			<h2>Cart</h2>
@@ -281,78 +297,102 @@
 				<!-- Cart items will be dynamically added here using JavaScript -->
 			</div>
 			<div class="cart-total" id="cart-total">Total: $0.00</div>
-			<button class="place-order" onclick="placeOrder()">Place Order</button>
+			<button class="check-out" onclick="checkout()">Go to Checkout</button>
 		</div>
 	
 	</div>
 
 	
-
-	<script>
-		// Your JavaScript code here
-		let cart = [];
-
-		function addItemToCart(item, price) {
-			cart.push({ item, price });
-			updateCart();
-			saveCartToLocalStorage();
-		}
-
-		function removeItemFromCart(index) {
-			cart.splice(index, 1);
-			updateCart();
-			saveCartToLocalStorage();
-		}
-
-		function updateCart() {
-			const cartTotal = document.getElementById('cart-total');
-			const cartItemsContainer = document.getElementById('cart-items');
-
-			cartItemsContainer.innerHTML = '';
-			let total = 0;
-
-			cart.forEach((cartItem, index) => {
-				const cartItemDiv = document.createElement('div');
-				cartItemDiv.classList.add('cart-item');
-				const itemName = document.createElement('div');
-				itemName.classList.add('cart-item-name');
-				itemName.innerText = `${cartItem.item} - $${cartItem.price.toFixed(2)}`;
-				const removeButton = document.createElement('button');
-				removeButton.classList.add('remove-item');
-				removeButton.innerText = 'Remove';
-				removeButton.onclick = () => removeItemFromCart(index);
-
-				cartItemDiv.appendChild(itemName);
-				cartItemDiv.appendChild(removeButton);
-				cartItemsContainer.appendChild(cartItemDiv);
-
-				total += cartItem.price;
-			});
-
-			cartTotal.innerText = `Total: $${total.toFixed(2)}`;
-		}
-
-		function placeOrder() {
-			const total = cart.reduce((sum, item) => sum + item.price, 0);
-			alert(`Your order has been placed! Total amount: $${total.toFixed(2)}`);
-			cart = []; // Clear the cart after placing the order
-			updateCart();
-		}
-	function saveCartToLocalStorage() {
-        localStorage.setItem('cart', JSON.stringify(cart));
-    }
-
-    function loadCartFromLocalStorage() {
-        const storedCart = localStorage.getItem('cart');
-        if (storedCart) {
-            cart = JSON.parse(storedCart);
-            updateCart();
-        }
-    }
-
-    // Load the cart from localStorage when the page loads
-    window.addEventListener('load', loadCartFromLocalStorage);
-
-	</script>
-</body>
+   <script>
+                // Your JavaScript code here
+                let cart = [];
+    
+                function addItemToCart(item, price) {
+                    const existingItem = cart.find(cartItem => cartItem.item === item);
+                    
+                    if (existingItem) {
+                        existingItem.count++;
+                    } else {
+                        cart.push({ item, price, count: 1 });
+                    }
+    
+                    updateCart();
+                    saveCartToLocalStorage();
+                }
+    
+                function removeItemFromCart(index) {
+                    cart.splice(index, 1);
+                    updateCart();
+                    saveCartToLocalStorage();
+                }
+    
+                function updateCart() {
+                    const cartTotal = document.getElementById('cart-total');
+                    const cartItemsContainer = document.getElementById('cart-items');
+    
+                    cartItemsContainer.innerHTML = '';
+                    let total = 0;
+    
+                    cart.forEach((cartItem, index) => {
+                        const cartItemDiv = document.createElement('div');
+                        cartItemDiv.classList.add('cart-item');
+                        const itemName = document.createElement('div');
+                        itemName.classList.add('cart-item-name');
+                        itemName.innerText = `${cartItem.item} x ${cartItem.count} - $${(cartItem.price * cartItem.count).toFixed(2)}`;
+                        
+                        const subtractButton = document.createElement('button');
+                        subtractButton.classList.add('quantity-button');
+                        subtractButton.innerText = '-';
+                        subtractButton.onclick = () => subtractCartItem(index);
+    
+                        const addButton = document.createElement('button');
+                        addButton.classList.add('quantity-button');
+                        addButton.innerText = '+';
+                        addButton.onclick = () => addItemToCart(cartItem.item, cartItem.price);
+                        
+                        const removeButton = document.createElement('button');
+                        removeButton.classList.add('remove-item');
+                        removeButton.innerText = 'Remove';
+                        removeButton.onclick = () => removeItemFromCart(index);
+    
+                        cartItemDiv.appendChild(itemName);
+                        cartItemDiv.appendChild(subtractButton);
+                        cartItemDiv.appendChild(addButton);
+                        cartItemDiv.appendChild(removeButton);
+                        cartItemsContainer.appendChild(cartItemDiv);
+    
+                        total += cartItem.price * cartItem.count;
+                    });
+    
+                    cartTotal.innerText = `Total: $${total.toFixed(2)}`;
+                }
+    
+                function subtractCartItem(index) {
+                    if (cart[index].count > 1) {
+                        cart[index].count--;
+                        updateCart();
+                        saveCartToLocalStorage();
+                    }
+                }
+    
+                function checkout() {
+                    window.location.href = "add_cart.html";
+                }
+    
+                function saveCartToLocalStorage() {
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                }
+    
+                function loadCartFromLocalStorage() {
+                    const storedCart = localStorage.getItem('cart');
+                    if (storedCart) {
+                        cart = JSON.parse(storedCart);
+                        updateCart();
+                    }
+                }
+    
+                // Load the cart from localStorage when the page loads
+               // window.addEventListener('load', loadCartFromLocalStorage);
+            </script>    
+	</body>
 </html>

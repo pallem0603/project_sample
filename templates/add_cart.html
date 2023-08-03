@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+
+body {
+            font-family: Arial, sans-serif;
+            background-image: url('coffeeshop.jpg'); /* Replace 'coffeeshop.jpg' with the path to your background image */
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+.cart-item {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin: 5px 0;
+		}
+
+		.cart-item-name {
+			flex: 1;
+			margin-right: 10px;
+		}
+
+		.cart-total {
+			font-weight: bold;
+			margin-top: 10px;
+		}
+
+		.remove-item {
+			background-color: #b81e20;
+			color: #fff;
+			font-weight: bold;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			padding: 2px 5px;
+			font-size: 12px;
+		}
+		.place-order {
+			margin-top: 10px;
+			background-color: #007BFF;
+			color: #fff;
+			font-weight: bold;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			padding: 5px 10px;
+			font-size: 16px;
+		}
+		.cart {
+			position: fixed;
+			background-color: #fff;
+			border-radius: 5px;
+			padding: 10px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		.place-order:hover {
+			background-color: #0056b3;
+		}
+		.remove-item:hover {
+			background-color: #a31c1e;
+		}
+
+		.place-order {
+			margin-top: 10px;
+			background-color: #007BFF;
+			color: #fff;
+			font-weight: bold;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			padding: 5px 10px;
+			font-size: 16px;
+		}
+		.menu-bar {
+			background-color: #b81e20;
+			padding: 10px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 98%;
+		}
+
+		.menu-bar a {
+			color: #fff;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+		.place-order:hover {
+			background-color: #0056b3;
+		}
+    </style>
+</head>	
+<body>
+	<div class="menu-bar">
+		<a href="main_pagefinalpro.html">Home</a>
+
+	</div>
+	<div class="cart">
+		<h2>Cart</h2>
+		<div class="cart-items" id="cart-items">
+			<!-- Cart items will be dynamically added here using JavaScript -->
+		</div>
+		<div class="cart-total" id="cart-total">Total: $0.00</div>
+		<button class="place-order" onclick="placeOrder()">Place Order</button>
+	</div>
+</body>
+<script>
+    // Your JavaScript code here
+    let cart = [];
+
+    function addItemToCart(item, price) {
+                    const existingItem = cart.find(cartItem => cartItem.item === item);
+                    
+                    if (existingItem) {
+                        existingItem.count++;
+                    } else {
+                        cart.push({ item, price, count: 1 });
+                    }
+    
+                    updateCart();
+                    saveCartToLocalStorage();
+                }
+
+    function removeItemFromCart(index) {
+        cart.splice(index, 1);
+        updateCart();
+        saveCartToLocalStorage();
+    }
+    function updateCart() {
+                    const cartTotal = document.getElementById('cart-total');
+                    const cartItemsContainer = document.getElementById('cart-items');
+    
+                    cartItemsContainer.innerHTML = '';
+                    let total = 0;
+    
+                    cart.forEach((cartItem, index) => {
+                        const cartItemDiv = document.createElement('div');
+                        cartItemDiv.classList.add('cart-item');
+                        const itemName = document.createElement('div');
+                        itemName.classList.add('cart-item-name');
+                        itemName.innerText = `${cartItem.item} x ${cartItem.count} - $${(cartItem.price * cartItem.count).toFixed(2)}`;
+                        
+                        const subtractButton = document.createElement('button');
+                        subtractButton.classList.add('quantity-button');
+                        subtractButton.innerText = '-';
+                        subtractButton.onclick = () => subtractCartItem(index);
+    
+                        const addButton = document.createElement('button');
+                        addButton.classList.add('quantity-button');
+                        addButton.innerText = '+';
+                        addButton.onclick = () => addItemToCart(cartItem.item, cartItem.price);
+                        
+                        const removeButton = document.createElement('button');
+                        removeButton.classList.add('remove-item');
+                        removeButton.innerText = 'Remove';
+                        removeButton.onclick = () => removeItemFromCart(index);
+    
+                        cartItemDiv.appendChild(itemName);
+                        cartItemDiv.appendChild(subtractButton);
+                        cartItemDiv.appendChild(addButton);
+                        cartItemDiv.appendChild(removeButton);
+                        cartItemsContainer.appendChild(cartItemDiv);
+    
+                        total += cartItem.price * cartItem.count;
+                    });
+    
+                    cartTotal.innerText = `Total: $${total.toFixed(2)}`;
+                }
+    
+                function subtractCartItem(index) {
+                    if (cart[index].count > 1) {
+                        cart[index].count--;
+                        updateCart();
+                        saveCartToLocalStorage();
+                    }
+                }
+    
+                function checkout() {
+                    window.location.href = "cart.html";
+                }
+    
+                function saveCartToLocalStorage() {
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                }
+    
+                function loadCartFromLocalStorage() {
+                    const storedCart = localStorage.getItem('cart');
+                    if (storedCart) {
+                        cart = JSON.parse(storedCart);
+                        updateCart();
+                    }
+                }
+                function placeOrder() {
+			
+			alert('Your order has been placed successfully!!')
+			
+		}
+                // Load the cart from localStorage when the page loads
+                 window.addEventListener('load', loadCartFromLocalStorage);
+            </script>
+</html>
