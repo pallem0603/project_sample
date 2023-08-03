@@ -1,17 +1,358 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coffee Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('coffeeshop.jpg'); /* Replace 'coffeeshop.jpg' with the path to your background image */
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-{% block content %}
-    <h2>Welcome to Your Dashboard, {{ user_name }}</h2>
-    <h3>User Dashboard</h3>
-    <h4>Menu and Inventory</h4>
-    {% for category, items in menu.items() %}
-        <h5>{{ category.capitalize() }} Category</h5>
-        <ul>
-            {% for item in items %}
-                <li>{{ item }}</li>
-            {% endfor %}
-        </ul>
-        <p>Inventory: {{ inventory[category] }}</p>
-    {% endfor %}
-    <p><a href="{{ url_for('logout') }}">Logout</a></p>
-{% endblock %}
+        .main-content {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8); /* Added transparency to make the content background slightly transparent */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #b81e20;
+        }
+
+        h2 {
+            color: #222;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+            display: flex; /* Display the list items (li) side by side */
+            flex-wrap: wrap; /* Allow items to wrap to the next line if there's not enough space */
+            justify-content: center; /* Center the list items horizontally */
+        }
+
+        li {
+            margin: 10px;
+        }
+
+        .category-image {
+            width: 150px;
+            height: 100px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .category-name {
+            font-size: 18px;
+            color: #222;
+        }
+
+        a {
+            color: #007BFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+		
+		.menu-bar {
+			background-color: #b81e20;
+			padding: 10px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 98%;
+		}
+
+		.menu-bar a {
+			color: #fff;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.menu-items {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			margin-top: 20px;
+		}
+
+		.menu-item {
+			width: 150px;
+			margin: 10px;
+			text-align: center;
+			flex: 1 0 150px;
+		}
+
+		.menu-item img {
+			width: 100px;
+			height: 75px;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+
+		.menu-item h4 {
+			margin: 5px 0;
+			color: #222;
+		}
+
+		.add-to-cart {
+			background-color: #b81e20;
+			color: #fff;
+			font-weight: bold;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			padding: 5px 10px;
+		}
+
+		.add-to-cart:hover {
+			background-color: #a31c1e;
+		}
+
+		.cart {
+			position: fixed;
+			top: 50px;
+			right: 10px;
+			background-color: #fff;
+			border-radius: 5px;
+			padding: 10px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+
+		.cart-item {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin: 5px 0;
+		}
+
+		.cart-item-name {
+			flex: 1;
+			margin-right: 10px;
+		}
+
+		.cart-total {
+			font-weight: bold;
+			margin-top: 10px;
+		}
+
+		.remove-item {
+			background-color: #b81e20;
+			color: #fff;
+			font-weight: bold;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			padding: 2px 5px;
+			font-size: 12px;
+		}
+
+		.remove-item:hover {
+			background-color: #a31c1e;
+		}
+
+		.place-order {
+			margin-top: 10px;
+			background-color: #007BFF;
+			color: #fff;
+			font-weight: bold;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			padding: 5px 10px;
+			font-size: 16px;
+		}
+
+		.place-order:hover {
+			background-color: #0056b3;
+		}
+    </style>
+</head>
+<body>
+	<div class="menu-bar">
+		<a href="main_pagefinalpro.html">Home</a>
+		<a href="cart.html">My cart</a>
+		
+	</div>
+	<div class="main-content">
+		<h1>Welcome to the Coffee Shop!</h1>
+		
+		<div class="menu-items">
+			<h3>Espresso</h3>
+			<div class="menu-item">
+				<h4>Lungo</h4>
+				<img class="category-image" src="lungo.jpg" alt="Espresso" onclick="addItemToCart('Lungo', 3.99)">
+				<div class="category-name">$3.99</div>
+				<button class="add-to-cart" onclick="addItemToCart('Lungo', 3.99)">Add to Cart</button>
+			</div>
+			<div class="menu-item">
+				<h4>Americano</h4>
+				<img class="category-image" src="americano.jpg" alt="Espresso" onclick="addItemToCart('Americano', 4.49)">
+				<div class="category-name">$4.49</div>
+				<button class="add-to-cart" onclick="addItemToCart('Americano', 4.49)">Add to Cart</button>
+			</div>
+			<div class="menu-item">
+				<h4>Mocha</h4>
+				<img class="category-image" src="mocha.jpg" alt="Espresso" onclick="addItemToCart('Mocha', 4.99)">
+				<div class="category-name">$4.99</div>
+				<button class="add-to-cart" onclick="addItemToCart('Mocha', 4.99)">Add to Cart</button>
+			</div>
+           <br>
+			<h3>Cappuccino</h3>
+			<div class="menu-item">
+				<h4>Regular Cappuccino</h4>
+				<img class="category-image" src="cappuccino.jpg" alt="Regular Cappuccino" onclick="addItemToCart('Regular Cappuccino', 4.99)">
+				<div class="category-name">$4.99</div>
+				<button class="add-to-cart" onclick="addItemToCart('Regular Cappuccino', 4.99)">Add to Cart</button>
+			</div>
+			<div class="menu-item">
+				<h4>. Vanilla Cappuccino </h4>
+				<img class="category-image" src="cappuccino.jpg" alt="Vanilla Cappuccino" onclick="addItemToCart('Vanilla Cappuccino', 5.49)">
+				<div class="category-name">$5.49</div>
+				<button class="add-to-cart" onclick="addItemToCart('Vanilla Cappuccino', 5.49)">Add to Cart</button>
+			</div>
+			<div class="menu-item">
+				<h4>Caramel Cappuccino</h4>
+				<img class="category-image" src="cappuccino.jpg" alt="Caramel Cappuccino" onclick="addItemToCart('Caramel Cappuccino', 5.99)">
+				<div class="category-name">$5.99</div>
+				<button class="add-to-cart" onclick="addItemToCart('Caramel Cappuccino', 5.99)">Add to Cart</button>
+			</div>
+
+			<h3>Sandwiches</h3>
+			<div class="menu-item">
+                <h4>Veg Sandwich</h4>
+                <img class="category-image" src="sandwiches.jpg" alt="Sandwich 1" onclick="addItemToCart('Veg Sandwich', 3.99)">
+                <div class="category-name">$3.99</div>
+                <button class="add-to-cart" onclick="addItemToCart('Veg Sandwich', 3.99)">Add to Cart</button>
+            </div>
+            <div class="menu-item">
+                <h4>Egg Sandwich</h4>
+                <img class="category-image" src="sandwiches.jpg" alt="Sandwich 2" onclick="addItemToCart('Egg Sandwich', 4.49)">
+                <div class="category-name">$4.49</div>
+                <button class="add-to-cart" onclick="addItemToCart('Egg Sandwich', 4.49)">Add to Cart</button>
+            </div>
+            <div class="menu-item">
+                <h4>Chicken Sandwich</h4>
+                <img class="category-image" src="sandwiches.jpg" alt="Sandwich 3" onclick="addItemToCart('Chicken Sandwich', 4.99)">
+                <div class="category-name">$4.99</div>
+                <button class="add-to-cart" onclick="addItemToCart('Chicken Sandwich', 4.99)">Add to Cart</button>
+            </div>
+			<h3>Pastries</h3>
+			<div class="menu-item">
+                <h4>Black Forest</h4>
+                <img class="category-image" src="pastries.jpg" alt="pastries" onclick="addItemToCart('Black Forest', 3.99)">
+                <div class="category-name">$3.99</div>
+                <button class="add-to-cart" onclick="addItemToCart('Black Forest', 3.99)">Add to Cart</button>
+            </div>
+            <div class="menu-item">
+                <h4>Chocolate</h4>
+                <img class="category-image" src="pastries.jpg" alt="Chocolate" onclick="addItemToCart('Chocolate', 4.49)">
+                <div class="category-name">$4.49</div>
+                <button class="add-to-cart" onclick="addItemToCart('Chocolate', 4.49)">Add to Cart</button>
+            </div>
+            <div class="menu-item">
+                <h4>Black Current</h4>
+                <img class="category-image" src="pastries.jpg" alt="Black Current" onclick="addItemToCart('Black Current', 4.99)">
+                <div class="category-name">$4.99</div>
+                <button class="add-to-cart" onclick="addItemToCart('Black Current', 4.99)">Add to Cart</button>
+            </div>
+			
+		</div>
+		<div class="cart">
+			<h2>Cart</h2>
+			<div class="cart-items" id="cart-items">
+				<!-- Cart items will be dynamically added here using JavaScript -->
+			</div>
+			<div class="cart-total" id="cart-total">Total: $0.00</div>
+			<button class="place-order" onclick="placeOrder()">Place Order</button>
+		</div>
+	
+	</div>
+
+	
+
+	<script>
+		// Your JavaScript code here
+		let cart = [];
+
+		function addItemToCart(item, price) {
+			cart.push({ item, price });
+			updateCart();
+			saveCartToLocalStorage();
+		}
+
+		function removeItemFromCart(index) {
+			cart.splice(index, 1);
+			updateCart();
+			saveCartToLocalStorage();
+		}
+
+		function updateCart() {
+			const cartTotal = document.getElementById('cart-total');
+			const cartItemsContainer = document.getElementById('cart-items');
+
+			cartItemsContainer.innerHTML = '';
+			let total = 0;
+
+			cart.forEach((cartItem, index) => {
+				const cartItemDiv = document.createElement('div');
+				cartItemDiv.classList.add('cart-item');
+				const itemName = document.createElement('div');
+				itemName.classList.add('cart-item-name');
+				itemName.innerText = `${cartItem.item} - $${cartItem.price.toFixed(2)}`;
+				const removeButton = document.createElement('button');
+				removeButton.classList.add('remove-item');
+				removeButton.innerText = 'Remove';
+				removeButton.onclick = () => removeItemFromCart(index);
+
+				cartItemDiv.appendChild(itemName);
+				cartItemDiv.appendChild(removeButton);
+				cartItemsContainer.appendChild(cartItemDiv);
+
+				total += cartItem.price;
+			});
+
+			cartTotal.innerText = `Total: $${total.toFixed(2)}`;
+		}
+
+		function placeOrder() {
+			const total = cart.reduce((sum, item) => sum + item.price, 0);
+			alert(`Your order has been placed! Total amount: $${total.toFixed(2)}`);
+			cart = []; // Clear the cart after placing the order
+			updateCart();
+		}
+	function saveCartToLocalStorage() {
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    function loadCartFromLocalStorage() {
+        const storedCart = localStorage.getItem('cart');
+        if (storedCart) {
+            cart = JSON.parse(storedCart);
+            updateCart();
+        }
+    }
+
+    // Load the cart from localStorage when the page loads
+    window.addEventListener('load', loadCartFromLocalStorage);
+
+	</script>
+</body>
+</html>
