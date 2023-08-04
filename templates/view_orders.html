@@ -1,16 +1,37 @@
+<!-- view_orders.html -->
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Orders</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Add your custom CSS file here (if any) -->
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">View Customer Orders</h2>
-        <!-- Add your logic to display customer orders here -->
-    </div>
+    <h2>View Orders</h2>
+    <table>
+        <tr>
+            <th>Order ID</th>
+            <th>User Email</th>
+            <th>Total Price</th>
+            <th>Order Date</th>
+            <th>Items</th>
+        </tr>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.user.email }}</td>
+            <td>${{ order.total_price }}</td>
+            <td>{{ order.date }}</td>
+            <td>
+                <ul>
+                    {% for item in order.items %}
+                        <li>{{ item.menu_item.name }} (Quantity: {{ item.quantity }})</li>
+                    {% endfor %}
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="{{ url_for('manager_dashboard') }}">Back to Manager Dashboard</a></p>
 </body>
 </html>

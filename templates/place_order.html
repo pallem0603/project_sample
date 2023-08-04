@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Place Order</title>
+</head>
+<body>
+    <h2>Place Order</h2>
+    <p>Click the button below to place your order:</p>
+    <form action="{{ url_for('place_order') }}" method="post">
+        <button type="submit">Place Order</button>
+    </form>
+    <a href="{{ url_for('user_dashboard') }}">Back to Dashboard</a>
+</body>
+</html>

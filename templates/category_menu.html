@@ -1,12 +1,35 @@
-{% extends 'base.html' %}
+<!-- category_menu.html -->
 
-{% block content %}
-    <h2>{{ category.capitalize() }} Menu</h2>
-    <ul>
-        {% for item in menu %}
-            <li>{{ item }}</li>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Menu - {{ category }}</title>
+</head>
+<body>
+    <h2>Menu - {{ category }}</h2>
+    <table>
+        <tr>
+            <th>Item Name</th>
+            <th>Price</th>
+            <th>Inventory</th>
+            <th>Add to Cart</th>
+        </tr>
+        {% for item_name, item_info in menu.items() %}
+            <tr>
+                <td>{{ item_name }}</td>
+                <td>${{ item_info['price'] }}</td>
+                <td>{{ item_info['quantity'] }}</td>
+                <td>
+                    <form action="{{ url_for('add_to_cart_user') }}" method="post">
+                        <input type="hidden" name="item_name" value="{{ item_name }}">
+                        <input type="number" name="quantity" min="1" max="{{ item_info['quantity'] }}" value="1">
+                        <button type="submit">Add to Cart</button>
+                    </form>
+                </td>
+            </tr>
         {% endfor %}
-    </ul>
-    <p>Inventory for {{ category.capitalize() }} category: {{ inventory[category] }}</p>
-    <p><a href="{{ url_for('main_page') }}">Back to Main Page</a></p>
-{% endblock %}
+    </table>
+
+    <p><a href="{{ url_for('user_dashboard') }}">Back to User Dashboard</a></p>
+</body>
+</html>

@@ -1,22 +1,22 @@
+<!-- manager_login.html -->
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Login</title>
 </head>
 <body>
     <h2>Manager Login</h2>
-    <form method="POST">
+    <form action="{{ manager_login_url }}" method="post">
         <label for="manager_email">Email:</label>
-        <input type="email" id="manager_email" name="manager_email" required>
+        <input type="email" name="manager_email" id="manager_email" required>
         <br>
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
+        <input type="password" name="password" id="password" required>
         <br>
-        <input type="submit" value="Login">
+        <button type="submit">Login</button>
     </form>
-    <p>Don't have an account? <a href="{{ manager_signup_url }}">Sign up here</a></p>
+
+    <p>Don't have an account? <a href="{{ manager_signup_url }}">Sign up as a Manager</a></p>
 </body>
 </html>

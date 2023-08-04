@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Checkout</h2>
+    <p>Please review your order:</p>
+    <ul>
+        {% for item in cart %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+    <form method="post" action="{{ url_for('place_order') }}">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        <label for="address">Address:</label>
+        <textarea id="address" name="address" required></textarea><br>
+        <label for="phone">Phone:</label>
+        <input type="text" id="phone" name="phone" required><br>
+        <button type="submit">Place Order</button>
+    </form>
+    <a href="{{ url_for('user_dashboard') }}">Back to Dashboard</a>
+{% endblock %}
