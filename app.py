@@ -551,7 +551,7 @@ def place_order():
         db.session.add(order_item)
         menu_item.quantity -= item_info['quantity']  # Reduce the item quantity from the inventory
         db.session.commit()
-
+    flash("Your order has been placed successfully. Thank you!", "success")
     session['cart'] = []  # Clear the cart after placing the order
     flash("Your order has been placed successfully. Thank you!", "success")
     return redirect(url_for('user_dashboard'))
