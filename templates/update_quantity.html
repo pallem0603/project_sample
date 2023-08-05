@@ -1,22 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Update Item Quantity</title>
+    <title>Manager Dashboard - Update Quantity</title>
 </head>
 <body>
+    <h1>Welcome, {{ manager_name }}!</h1>
     <h2>Update Item Quantity</h2>
-    <form action="{{ url_for('update_quantity') }}" method="POST">
-        <label for="item_name">Select Item:</label>
-        <select name="item_name" id="item_name">
-            {% for item in inventory.keys() %}
-                <option value="{{ item }}">{{ item }}</option>
-            {% endfor %}
-        </select>
-        <br>
+    <form method="post" action="{{ url_for('update_quantity') }}">
+        <label for="item_name">Item Name:</label>
+        <input type="text" id="item_name" name="item_name" required>
         <label for="new_quantity">New Quantity:</label>
-        <input type="number" name="new_quantity" id="new_quantity" min="0" required>
-        <br>
+        <input type="number" id="new_quantity" name="new_quantity" required>
         <button type="submit">Update Quantity</button>
     </form>
+    <a href="{{ url_for('manager_dashboard') }}">Back to Dashboard</a>
 </body>
 </html>

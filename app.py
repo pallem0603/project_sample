@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
+
 import re
 
 app = Flask(__name__)
@@ -33,6 +34,8 @@ class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     total_price = db.Column(db.Float, nullable=False)
+    items = db.relationship('OrderItem', back_populates='order', cascade='all, delete-orphan')
+    user = db.relationship('User', backref='orders')
 
 class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -40,35 +43,95 @@ class OrderItem(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('menu_item.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
 
+    order = db.relationship('Order', back_populates='items')
+    item = db.relationship('MenuItem')
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
 # Create database tables
-db.create_all()
+menu = {
+    # ... (your menu items here)
+}
+menu_items = [
+    MenuItem(name='Espresso', price=3.0, quantity=20, category='espresso'),
+    MenuItem(name='Double Espresso', price=4.5, quantity=15, category='espresso'),
+    MenuItem(name='Americano', price=3.5, quantity=30, category='espresso'),
+    MenuItem(name='Cappuccino', price=4.0, quantity=20, category='cappuccino'),
+    MenuItem(name='Iced Cappuccino', price=4.5, quantity=15, category='cappuccino'),
+    MenuItem(name='Caramel Cappuccino', price=5.0, quantity=30, category='cappuccino'),
+    MenuItem(name='Croissant', price=2.0, quantity=10, category='pastries'),
+    MenuItem(name='Danish', price=2.5, quantity=12, category='pastries'),
+    MenuItem(name='Muffin', price=2.0, quantity=15, category='pastries'),
+    MenuItem(name='Chicken Sandwich', price=5.0, quantity=10, category='sandwiches'),
+    MenuItem(name='Vegetarian Sandwich', price=4.5, quantity=12, category='sandwiches'),
+    MenuItem(name='BLT Sandwich', price=4.0, quantity=15, category='sandwiches'),
+    # Add more menu items here
+]
 
+# Insert menu items into the database
+for item in menu_items:
+    db.session.add(item)
+
+# Commit changes to the database
+db.session.commit()
+# Insert menu items into the database
+for category, items in menu.items():
+    for item_id, item_data in items.items():
+        item = MenuItem(name=item_data['name'], price=item_data['price'], quantity=item_data['quantity'], category=category)
+        db.session.add(item)
+
+# Commit changes to the database
+db.session.commit()
+db.create_all()
+MenuItem.query.all()
 # Menu and Inventory data
 menu = {
     'espresso': {
-        'Espresso': {'price': 3.0, 'quantity': 20},
-        'Double Espresso': {'price': 4.5, 'quantity': 15},
-        'Americano': {'price': 3.5, 'quantity': 30},
+        '1': {'name': 'Espresso', 'price': 3.0, 'quantity': 20},
+        '2': {'name': 'Double Espresso', 'price': 4.5, 'quantity': 15},
+        '3': {'name': 'Americano', 'price': 3.5, 'quantity': 30},
     },
     'cappuccino': {
-        'Cappuccino': {'price': 4.0, 'quantity': 20},
-        'Iced Cappuccino': {'price': 4.5, 'quantity': 15},
-        'Caramel Cappuccino': {'price': 5.0, 'quantity': 30},
+        '4': {'name': 'Cappuccino', 'price': 4.0, 'quantity': 20},
+        '5': {'name': 'Iced Cappuccino', 'price': 4.5, 'quantity': 15},
+        '6': {'name': 'Caramel Cappuccino', 'price': 5.0, 'quantity': 30},
     },
     'pastries': {
-        'Croissant': {'price': 2.0, 'quantity': 10},
-        'Danish': {'price': 2.5, 'quantity': 12},
-        'Muffin': {'price': 2.0, 'quantity': 15},
+        '7': {'name': 'Croissant', 'price': 2.0, 'quantity': 10},
+        '8': {'name': 'Danish', 'price': 2.5, 'quantity': 12},
+        '9': {'name': 'Muffin', 'price': 2.0, 'quantity': 15},
     },
     'sandwiches': {
-        'Chicken Sandwich': {'price': 5.0, 'quantity': 10},
-        'Vegetarian Sandwich': {'price': 4.5, 'quantity': 12},
-        'BLT Sandwich': {'price': 4.0, 'quantity': 15},
+        '10': {'name': 'Chicken Sandwich', 'price': 5.0, 'quantity': 10},
+        '11': {'name': 'Vegetarian Sandwich', 'price': 4.5, 'quantity': 12},
+        '12': {'name': 'BLT Sandwich', 'price': 4.0, 'quantity': 15},
     },
     # Add more categories and items here
 }
-
-
+# Assuming you have the MenuItem model defined with 'price' attribute
+menu_prices = {
+    'espresso': {
+        'Espresso': 3.0,
+        'Double Espresso': 4.5,
+        'Americano': 3.5,
+    },
+    'cappuccino': {
+        'Cappuccino': 4.0,
+        'Iced Cappuccino': 4.5,
+        'Caramel Cappuccino': 5.0,
+    },
+    'pastries': {
+        'Croissant': 2.0,
+        'Danish': 2.5,
+        'Muffin': 2.0,
+    },
+    'sandwiches': {
+        'Chicken Sandwich': 5.0,
+        'Vegetarian Sandwich': 4.5,
+        'BLT Sandwich': 4.0,
+    },
+    # Add more categories and items here
+}
 # Cart data for users
 # The structure is: {item_name: {'price': price, 'quantity': quantity}}
 user_cart = {}
@@ -106,9 +169,6 @@ def select_role():
 
 @app.route('/category/<category>')
 def category_menu(category):
-    if category not in menu:
-        return "Category not found."
-
     # Fetch the latest menu information from the database
     category_items = MenuItem.query.filter_by(category=category).all()
     category_menu_items = {item.name: {'price': item.price, 'quantity': item.quantity} for item in category_items}
@@ -164,26 +224,6 @@ def user_signup():
 
     return render_template('user_signup.html', signup_url=url_for('user_signup'), login_url=url_for('user_login'))
 
-@app.route('/manager/login', methods=['GET', 'POST'])
-def manager_login():
-    if request.method == 'POST':
-        email = request.form.get('manager_email')
-        password = request.form.get('password')
-
-        if not email or not password:
-            flash("Please provide both email and password.", "error")
-            return redirect(url_for('manager_login'))
-
-        manager = Manager.query.filter_by(email=email).first()
-        if manager and check_password_hash(manager.password, password):
-            # Successful login, store manager information in session
-            session['manager_email'] = email
-            flash(f"Welcome, {manager.first_name}! You are now logged in as a manager.", "success")
-            return redirect(url_for('manager_dashboard'))  # Redirect to manager dashboard after successful login
-        else:
-            flash("Invalid email address or password. Please try again.", "error")
-
-    return render_template('manager_login.html', manager_signup_url=url_for('manager_signup'), manager_login_url=url_for('manager_login'))
 
 @app.route('/manager/signup', methods=['GET', 'POST'])
 def manager_signup():
@@ -211,7 +251,30 @@ def manager_signup():
             flash("Manager successfully signed up. Please log in with your new credentials.", "success")
             return redirect(url_for('manager_login'))  # Redirect to manager login page after successful signup
 
-    return render_template('user_dashboard.html', user_name=user.first_name, menu=menu, menu_prices=menu_prices, inventory=inventory, cart_items=session.get('cart', {}))
+    return render_template('manager_signup.html', manager_signup_url=url_for('manager_signup'), manager_login_url=url_for('manager_login'))
+
+@app.route('/manager/login', methods=['GET', 'POST'])
+def manager_login():
+    if request.method == 'POST':
+        email = request.form.get('manager_email')
+        password = request.form.get('password')
+
+        if not email or not password:
+            flash("Please provide both email and password.", "error")
+            return redirect(url_for('manager_login'))
+
+        manager = Manager.query.filter_by(email=email).first()
+        if manager and check_password_hash(manager.password, password):
+            # Successful login, store manager information in session
+            session['manager_email'] = email
+            flash(f"Welcome, {manager.first_name}! You are now logged in as a manager.", "success")
+            return redirect(url_for('manager_dashboard'))  # Redirect to manager dashboard after successful login
+        else:
+            flash("Invalid email address or password. Please try again.", "error")
+            return redirect(url_for('manager_login'))
+
+    # For GET request (initial page load), render the manager_login.html template
+    return render_template('manager_login.html', manager_signup_url=url_for('manager_signup'), manager_login_url=url_for('manager_login'))
 
 # ... (previous code)
 
@@ -223,76 +286,60 @@ def get_cart_items():
     return session['user_cart']
 
 # ... (previous code)
-
+def calculate_total_price(cart_items):
+    total_price = 0.0
+    for item_name, quantity in cart_items.items():
+        menu_item = MenuItem.query.filter_by(name=item_name).first()
+        if menu_item:
+            total_price += menu_item.price * quantity
+    return total_price
 # ... (previous code)
-
 @app.route('/user/dashboard', methods=['GET', 'POST'])
 def user_dashboard():
     if 'user_email' not in session:
         flash("You need to log in as a user to access the dashboard.", "error")
         return redirect(url_for('user_login'))
 
-    menu_prices = {
-        'espresso': {
-            'Espresso': 2.5,
-            'Double Espresso': 3.0,
-            'Americano': 3.5,
-        },
-        'cappuccino': {
-            'Cappuccino': 3.0,
-            'Iced Cappuccino': 3.5,
-            'Caramel Cappuccino': 4.0,
-        },
-        'pastries': {
-            'Croissant': 2.0,
-            'Danish': 2.5,
-            'Muffin': 3.0,
-        },
-        'sandwiches': {
-            'Chicken Sandwich': 4.0,
-            'Vegetarian Sandwich': 4.5,
-            'BLT Sandwich': 5.0,
-        },
-        # Add prices for other categories and items
-    }
-
     user = User.query.filter_by(email=session['user_email']).first()
-    menu_items = MenuItem.query.all()
-    cart = get_cart_items()
+    cart = session.get('cart', [])  # Initialize cart as an empty list if not found in session
 
     if request.method == 'POST':
         item_name = request.form.get('item_name')
         item_price = float(request.form.get('item_price'))
         quantity = int(request.form.get('quantity'))
 
-        if quantity < 1:
-            flash("Quantity must be at least 1.", "error")
-        else:
-            item_in_cart = cart.get(item_name)
+        if item_name and quantity > 0:
+            item_in_cart = next((item for item in cart if item['name'] == item_name), None)
             if item_in_cart:
                 item_in_cart['quantity'] += quantity
                 item_in_cart['subtotal'] = item_in_cart['quantity'] * item_price
             else:
-                cart[item_name] = {
+                new_item = {
                     'name': item_name,
                     'price': item_price,
                     'quantity': quantity,
                     'subtotal': item_price * quantity
                 }
+                cart.append(new_item)
 
-            session['user_cart'] = cart
+            session['cart'] = cart
             flash(f"{quantity} {item_name}{'s' if quantity > 1 else ''} added to the cart.", "success")
+        else:
+            flash("Invalid input. Please try again.", "error")
 
-    total_price = sum(item['subtotal'] for item in cart.values())
-    return render_template('user_dashboard.html', user_name=user.first_name, menu=menu, menu_prices=menu_prices, inventory=inventory, cart_items=cart, total_price=total_price)
+    # Fetch menu items from the database and organize them by category
+    menu = {}
+    categories = set(item.category for item in MenuItem.query.distinct(MenuItem.category))
+    for category in categories:
+        items = MenuItem.query.filter_by(category=category).all()
+        menu[category] = {item.name: {'price': item.price, 'quantity': item.quantity} for item in items}
 
-# ... (rest of the code)
+    total_price = sum(item['subtotal'] for item in cart)
 
-# ... (rest of the code)
+    return render_template('user_dashboard.html', user_name=user.first_name, menu=menu, cart_items=cart, total_price=total_price)
 
-# ... (rest of the code)
 
-# ... (rest of the code)
+
 
 
 @app.route('/manager/dashboard')
@@ -305,6 +352,7 @@ def manager_dashboard():
     orders = Order.query.all()
 
     return render_template('manager_dashboard.html', manager_name=manager.first_name, orders=orders)
+
 
 # ... (previous code)
 
@@ -348,12 +396,14 @@ def add_item():
                     return redirect(url_for('add_item'))
 
     return render_template('add_item.html', menu=menu)
-
 @app.route('/manager/update_quantity', methods=['GET', 'POST'])
 def update_quantity():
     if 'manager_email' not in session:
         flash("You need to log in as a manager to access this page.", "error")
         return redirect(url_for('manager_login'))
+
+    # Fetch the latest menu items from the database
+    menu_items = MenuItem.query.all()
 
     if request.method == 'POST':
         item_name = request.form.get('item_name')
@@ -374,7 +424,7 @@ def update_quantity():
             else:
                 flash(f"Item '{item_name}' not found in the menu.", "error")
 
-    return render_template('update_quantity.html', menu=menu)
+    return render_template('update_quantity.html', menu=menu, menu_items=menu_items)
 
 @app.route('/manager/view_orders')
 def view_orders():
@@ -382,11 +432,22 @@ def view_orders():
         flash("You need to log in as a manager to access this page.", "error")
         return redirect(url_for('manager_login'))
 
+    manager = Manager.query.filter_by(email=session['manager_email']).first()
     orders = Order.query.all()
 
-    return render_template('view_orders.html', orders=orders)
+    return render_template('view_orders.html', manager_name=manager.first_name, orders=orders)
 
 # ... (rest of the code)
+# ... (other routes and code)
+
+@app.route('/manager/logout')
+def manager_logout():
+    # Clear the manager session data to log them out
+    session.pop('manager_email', None)
+    flash("You have been logged out as a manager.", "success")
+    return redirect(url_for('main_page'))
+
+# ... (other routes and code)
 
 @app.route('/logout')
 def logout():
@@ -401,29 +462,40 @@ def add_to_cart_user():
         flash("You need to log in as a user to add items to the cart.", "error")
         return redirect(url_for('user_login'))
 
-    item_name = request.form.get('item_name')
-    item_price = float(request.form.get('item_price'))
+    item_id = int(request.form.get('item_id'))
     quantity = int(request.form.get('quantity'))
 
-    if quantity < 1:
-        flash("Quantity must be at least 1.", "error")
+    menu_item = MenuItem.query.get(item_id)
+    if not menu_item:
+        flash("Invalid item selected.", "error")
+        return redirect(url_for('user_dashboard'))
+
+    if quantity > menu_item.quantity:
+        flash(f"Insufficient quantity of {menu_item.name} in stock.", "error")
+        return redirect(url_for('user_dashboard'))
+
+    cart = session.get('cart', [])
+    item_in_cart = next((item for item in cart if item['name'] == menu_item.name), None)
+    if item_in_cart:
+        item_in_cart['quantity'] += quantity
+        item_in_cart['subtotal'] = item_in_cart['quantity'] * menu_item.price
     else:
-        item_in_cart = user_cart.get(item_name)
-        if item_in_cart:
-            item_in_cart['quantity'] += quantity
-            item_in_cart['subtotal'] = item_in_cart['quantity'] * item_price
-        else:
-            user_cart[item_name] = {
-                'name': item_name,
-                'price': item_price,
-                'quantity': quantity,
-                'subtotal': item_price * quantity
-            }
+        new_item = {
+            'item_id': menu_item.id,
+            'name': menu_item.name,
+            'quantity': quantity,
+            'price': menu_item.price,
+            'subtotal': quantity * menu_item.price
+        }
+        cart.append(new_item)
 
-        session['user_cart'] = user_cart
-        flash(f"{quantity} {item_name}{'s' if quantity > 1 else ''} added to the cart.", "success")
-
+    session['cart'] = cart
+    flash(f"{quantity} {menu_item.name}{'s' if quantity > 1 else ''} added to the cart.", "success")
     return redirect(url_for('user_dashboard'))
+
+
+
+
 
 
 @app.route('/remove_from_cart_user/<item_name>', methods=['POST'])
@@ -438,7 +510,7 @@ def remove_from_cart_user(item_name):
     flash(f"{item_name} removed from the cart.", "success")
     return redirect(url_for('user_dashboard'))
 
-# ... (previous code)
+
 
 @app.route('/place_order', methods=['POST'])
 def place_order():
@@ -451,15 +523,15 @@ def place_order():
         flash("User not found. Please log in again.", "error")
         return redirect(url_for('user_login'))
 
-    cart = session.get('user_cart', {})
+    cart = session.get('cart', [])
     if not cart:
         flash("Your cart is empty. Please add items before placing an order.", "error")
         return redirect(url_for('user_dashboard'))
 
-    total_price = sum(item['subtotal'] for item in cart.values())
+    total_price = sum(item['subtotal'] for item in cart)
 
     # Check if items exist in the menu and have sufficient inventory before proceeding with the order
-    for item_info in cart.values():
+    for item_info in cart:
         menu_item = MenuItem.query.filter_by(name=item_info['name']).first()
         if not menu_item:
             flash(f"Item '{item_info['name']}' not found in the menu. Please remove it from the cart.", "error")
@@ -473,19 +545,16 @@ def place_order():
     db.session.add(order)
     db.session.commit()
 
-    for item_info in cart.values():
+    for item_info in cart:
         menu_item = MenuItem.query.filter_by(name=item_info['name']).first()
         order_item = OrderItem(order_id=order.id, item_id=menu_item.id, quantity=item_info['quantity'])
         db.session.add(order_item)
         menu_item.quantity -= item_info['quantity']  # Reduce the item quantity from the inventory
         db.session.commit()
 
-    session['user_cart'] = {}  # Clear the cart after placing the order
+    session['cart'] = []  # Clear the cart after placing the order
     flash("Your order has been placed successfully. Thank you!", "success")
     return redirect(url_for('user_dashboard'))
-
-# ... (rest of the code)
-
 
 
 def get_missing_password_requirements(password):

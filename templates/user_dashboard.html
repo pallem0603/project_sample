@@ -2,65 +2,63 @@
 <html>
 <head>
     <title>User Dashboard</title>
+    
 </head>
 <body>
     <h2>Welcome, {{ user_name }}!</h2>
+    
     <h3>Menu</h3>
-    <table>
-        <tr>
-            <th>Category</th>
-            <th>Item Name</th>
-            <th>Price</th>
-            <th>Inventory</th>
-            <th>Add to Cart</th>
-        </tr>
-        {% for category, items in menu.items() %}
-            {% for item, details in items.items() %}
-                {% set item_name = item.lower().replace(" ", "_") %}
-                <tr>
-                    <td>{{ category }}</td>
-                    <td>{{ item }}</td>
-                    <td>${{ menu_prices[category][item] }}</td>
-                    <td>{{ inventory[item_name] }}</td>
-                    <td>
-                        <form action="{{ url_for('add_to_cart_user') }}" method="post">
-                            <input type="hidden" name="item_name" value="{{ item_name }}">
-                            <input type="hidden" name="item_price" value="{{ menu_prices[category][item] }}">
-                            <input type="number" name="quantity" min="1" max="{{ inventory[item_name] }}" value="1">
-                            <button type="submit">Add to Cart</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
+<table>
+    <tr>
+        <th>Category</th>
+        <th>Item Name</th>
+        <th>Price</th>
+        <th>Inventory</th>
+        <th>Add to Cart</th>
+    </tr>
+    {% for category, items in menu.items() %}
+        {% for item_name, item_data in items.items() %}
+            <tr>
+                <td>{{ category }}</td>
+                <td>{{ item_name }}</td>
+                <td>${{ item_data.price }}</td>
+                <td>{{ item_data.quantity }}</td>
+                <td>
+                    <form action="{{ url_for('user_dashboard') }}" method="post">
+                        <input type="hidden" name="item_name" value="{{ item_name }}">
+                        <input type="hidden" name="item_price" value="{{ item_data.price }}">
+                        <input type="number" name="quantity" min="1" max="{{ item_data.quantity }}" value="1">
+                        <button type="submit">Add to Cart</button>
+                    </form>
+                </td>
+            </tr>
         {% endfor %}
-    </table>
-
+    {% endfor %}
+</table>
     <h3>Cart</h3>
     {% if cart_items %}
         <table>
             <tr>
                 <th>Item Name</th>
-                <th>Price</th>
                 <th>Quantity</th>
+                <th>Price</th>
                 <th>Subtotal</th>
             </tr>
-            {% for item_name, item_info in cart_items.items() %}
+            {% for item in cart_items %}
                 <tr>
-                    <td>{{ item_info['name'] }}</td>
-                    <td>${{ item_info['price'] }}</td>
-                    <td>{{ item_info['quantity'] }}</td>
-                    <td>${{ item_info['subtotal'] }}</td>
+                    <td>{{ item['name'] }}</td>
+                    <td>{{ item['quantity'] }}</td>
+                    <td>${{ item['price'] }}</td>
+                    <td>${{ item['subtotal'] }}</td>
                 </tr>
             {% endfor %}
         </table>
         <p>Total Price: ${{ total_price }}</p>
         <form action="{{ url_for('place_order') }}" method="post">
-            <button type="submit">Proceed to Order</button>
+            <button onclick="placeOrder()">Place Order</button>
         </form>
     {% else %}
         <p>Your cart is empty.</p>
     {% endif %}
 
-    <p><a href="{{ url_for('logout') }}">Logout</a></p>
-</body>
-</html>
+    <p><a href="{{ url_for('logout') }}">Logout</a
